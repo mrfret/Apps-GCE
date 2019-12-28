@@ -30,3 +30,4 @@ sed -i -e "/dockergc/d" /var/plexguide/app.list
 sed -i -e "/pgui/d" /var/plexguide/app.list
 sed -i -e "/crontabs/d" /var/plexguide/app.list
 sed -i -e "/plex/d" /var/plexguide/app.list
+sed -i -e "/crontab*/d" /var/plexguide/app.list
