@@ -1,3 +1,4 @@
+linuxserver/radarr
+linuxserver/radarr:nightly
+hotio/radarr:musl
 linuxserver/radarr:v0.2.0.1450-ls15
-linuxserver/radarr:preview
-aront/radarr
