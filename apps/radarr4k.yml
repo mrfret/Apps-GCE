@@ -16,7 +16,7 @@
         pgrole: 'radarr4k'
         intport: '7878'
         extport: '7874'
-        image: 'linuxserver/radarr:preview'
+        image: 'linuxserver/radarr:nightly'
 
     # CORE (MANDATORY) ############################################################
     - name: 'Including cron job'
