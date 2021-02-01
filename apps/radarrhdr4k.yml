@@ -13,7 +13,7 @@
 
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'radarrhdr'
+        pgrole: 'radarrhdr4k'
         intport: '7878'
         extport: '7876'
         image: 'linuxserver/radarr:nightly'
