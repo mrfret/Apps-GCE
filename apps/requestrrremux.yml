@@ -11,7 +11,7 @@
     # FACTS #######################################################################
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'requestrr'
+        pgrole: 'requestrrremux'
         intport: '4543'
         extport: '4545'
         intport2: '5058'
