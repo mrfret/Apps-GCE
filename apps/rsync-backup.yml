@@ -1,0 +1,92 @@
+#!/bin/bash
+#
+# Title:      rsync_backup docker with automatic  upload functionality 
+# Author(s):  MrDoob / doob187 / kkhiller
+#
+# License:    Copyright (c) 2020 @Authors
+# Own Risk any edits or mods 
+################################################################################
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    # #######################################################################
+    - name: 'Set Known Facts'
+      set_fact:
+        amg_role: 'rsync-backup'
+        image: 'ghcr.io/doob187/docker-backup:latest'
+
+    - name: 'Register TimeZone'
+      shell: 'cat /etc/timezone'
+      register: tz
+
+    - name: 'Register Server ID'
+      shell: 'cat /var/plexguide/server.id'
+      register: serverid
+
+    - name: 'Setting {{amg_role}} Volumes'
+      set_fact:
+        amg_volumes:
+          - '/opt/appdata/:/home'
+          - '/mnt/backup:/backup'
+          - '/opt/appdata/{{amg_role}}/rclone:/rclone'
+          - '/opt/appdata/{{amg_role}}/log:/log'
+
+    - name: 'Setting {{amg_role}} ENV'
+      set_fact:
+        amg_env:
+          CRON_TIME : '0 1 * * */7'
+          CONTAINER_TIMEZONE: '{{tz.stdout}}'
+          BACKUP_HOLD: '5'
+          SERVER_ID: '{{serverid.stdout}}'
+          RSYNC_COMPRESS_LEVEL: '2'
+          SET_CONTAINER_TIMEZONE: 'true'
+
+    ## VALUES for upload backups
+    - name: 'Create {{amg_role}} dir folder'
+      file: "path={{ item }} state=directory mode=0775 owner=1000 group=1000 recurse=yes"
+      with_items:
+       - '/mnt/backup'
+       - '/opt/appdata/{{amg_role}}'
+       - '/opt/appdata/{{amg_role}}/rclone'
+       - '/opt/appdata/{{amg_role}}/log'
+
+    - name: 'Check of Existance files in {{ amg_role }}'
+      stat:
+        path: '/opt/appdata/{{amg_role}}/rclone/rclone.conf'
+      register: rcp
+
+    - name: 'Remove old rclone.conf from {{ amg_role }} folder'
+      file: "path={{ item }} state=absent" 
+      with_items:
+        - '/opt/appdata/{{amg_role}}/rclone/rclone.conf'
+      ignore_errors: yes
+      when: rcp.stat.exists == true
+
+    - name: 'Clone rclone.config to {{ amg_role }} folder'
+      copy:
+        src: /opt/appdata/plexguide/rclone.conf 
+        dest: /opt/appdata/{{amg_role}}/rclone/rclone.conf
+        owner: 1000
+        group: 1000
+        mode: '0755'
+      ignore_errors: yes
+
+    # MAIN DEPLOYMENT
+    # #############################################################
+    - name: 'Deploying {{amg_role}}'
+      docker_container:
+        name: '{{amg_role}}'
+        image: '{{image}}'
+        pull: yes
+        volumes: '{{amg_volumes}}'
+        env: '{{amg_env}}'
+        restart_policy: unless-stopped
+        capabilities:
+          - 'SYS_TIME'
+          - 'SYS_NICE'
+        networks:
+          - name: plexguide
+            aliases:
+              - 'rsync-backup'
+        state: started
