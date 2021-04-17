@@ -35,7 +35,7 @@
         name: '{{amg_role}}'
         image: '{{image}}'
         pull: yes
-        volumes: '{{amg__volumes}}'
+        volumes: '{{amg_volumes}}'
         env: '{{amg_env}}'
         restart_policy: unless-stopped
         networks:
