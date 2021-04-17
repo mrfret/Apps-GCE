@@ -12,7 +12,7 @@
     # FACTS #######################################################################
     - name: 'Set Known Facts'
       set_fact:
-        amg_grole: 'dockupdater'
+        amg_role: 'dockupdater'
         image: 'dockupdater/dockupdater'
 
     - name: 'Setting {{amg_role}} Volumes'
