@@ -12,41 +12,17 @@
     # FACTS #######################################################################
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'dockupdater'
+        amg_grole: 'dockupdater'
         image: 'dockupdater/dockupdater'
 
-    # CORE (MANDATORY) ############################################################
-    - name: 'Including cron job'
-      include_tasks: '/opt/communityapps/apps/_core.yml'
-
-    # LABELS ######################################################################
-    - name: 'Adding Traefik'
+    - name: 'Setting {{amg_role}} Volumes'
       set_fact:
-        pg_labels:
-          traefik.enable: 'true'
-          traefik.port: '{{intport}}'
-          traefik.frontend.auth.forward.address: '{{gauth}}'
-          traefik.frontend.rule: 'Host:{{pgrole}}.{{domain.stdout}}{{tldset}}{{cname}}'
-          traefik.frontend.headers.SSLHost: '{{domain.stdout}}'
-          traefik.frontend.headers.SSLRedirect: 'true'
-          traefik.frontend.headers.STSIncludeSubdomains: 'true'
-          traefik.frontend.headers.STSPreload: 'true'
-          traefik.frontend.headers.STSSeconds: '315360000'
-          traefik.frontend.headers.browserXSSFilter: 'true'
-          traefik.frontend.headers.contentTypeNosniff: 'true'
-          traefik.frontend.headers.customResponseHeaders: 'X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex'
-          traefik.frontend.headers.forceSTSHeader: 'true'
-
-    - name: 'Setting {{pgrole}} Volumes'
-      set_fact:
-        pg_volumes:
+        amg_volumes:
           - '/var/run/docker.sock:/var/run/docker.sock'
 
-    - name: 'Setting {{pgrole}} ENV'
+    - name: 'Setting {{amg_role}} ENV'
       set_fact:
-        pg_env:
-          PUID: '1000'
-          PGID: '1000'
+        amg_env:
           CLEANUP: 'true'
           LOG_LEVEL: 'info'
           INTERVAL: '7200'
@@ -54,19 +30,16 @@
           WAIT: '180'
 
     # MAIN DEPLOYMENT #############################################################
-    - name: 'Deploying {{pgrole}}'
+    - name: 'Deploying {{amg_role}}'
       docker_container:
-        name: '{{pgrole}}'
+        name: '{{amg_role}}'
         image: '{{image}}'
         pull: yes
-        published_ports:
-          - '{{ports.stdout}}{{extport}}:{{intport}}'
-        volumes: '{{pg_volumes}}'
-        env: '{{pg_env}}'
+        volumes: '{{amg__volumes}}'
+        env: '{{amg_env}}'
         restart_policy: unless-stopped
         networks:
           - name: plexguide
             aliases:
-              - '{{pgrole}}'
+              - '{{amg_role}}'
         state: started
-        labels: '{{pg_labels}}'
