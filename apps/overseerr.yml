@@ -12,7 +12,7 @@
     # FACTS #######################################################################
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'overseer'
+        pgrole: 'overseerr'
         intport: '5055'
         extport: '5055'
         image: 'sctx/overseerr'
