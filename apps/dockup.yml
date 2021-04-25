@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# Title:      dockupdater
+# Author(s):  doob187        
+# GNU:        General Public License v3.0
+################################################################################
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    # FACTS #######################################################################
+    - name: 'Set Known Facts'
+      set_fact:
+        pgrole: 'dockup'
+        image: 'dockupdater/dockupdater'
+
+    - name: 'Setting {{pgrole}} Volumes'
+      set_fact:
+        pg_volumes:
+          - '/var/run/docker.sock:/var/run/docker.sock'
+          - '/etc/localtime:/etc/localtime:ro'
+
+    - name: 'Setting {{pgrole}} ENV'
+      set_fact:
+        pg_env:
+          PUID: '1000'
+          PGID: '1000'
+          CLEANUP: 'true'
+          LOG_LEVEL: 'info'
+          INTERVAL: '900'
+          LABEL: 'true'
+          WAIT: '180'
+          NOTIFIERS: 'discord://webhook_id/webhook_token'
+          DISABLE_SERVICES_CHECK: 'true'
+          DISABLE_CONTAINERS_CHECK: 'false'
+
+    # MAIN DEPLOYMENT #############################################################
+    - name: 'Deploying {{pgrole}}'
+      docker_container:
+        name: '{{pgrole}}'
+        image: '{{image}}'
+        pull: yes
+        volumes: '{{pg_volumes}}'
+        env: '{{pg_env}}'
+        restart_policy: unless-stopped
+        networks:
+          - name: plexguide
+            aliases:
+              - '{{pgrole}}'
+        state: started
